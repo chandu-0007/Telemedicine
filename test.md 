@@ -1,0 +1,39 @@
+some users 
+{
+    "id": 1,
+    "phone": "9014987450",
+    "name": "Ravi Kumar",
+    "role": "patient",
+    "isVerified": false,
+    "createdAt": "2025-09-16T11:12:13.675Z",
+    "address": "123 Main Street, Hyderabad",
+    "latitude": 17.385044,
+    "longitude": 78.486671
+} 
+
+example docters 
+{
+  "phone": "9123456789",
+  "name": "Dr. Arjun Mehta",
+  "role": "doctor",
+  "address": "Fortis Hospital, Bangalore",
+  "latitude": 12.971599,
+  "longitude": 77.594566,
+  "specialty": "Dermatologist",
+  "experience": 8,
+  "hospitalName": "Fortis",
+  "registrationId": "KMC-2025-00987"
+}
+
+{
+  "phone": "9876543210",
+  "name": "Dr. Priya Reddy",
+  "role": "doctor",
+  "address": "Apollo Hospital, Hyderabad",
+  "latitude": 17.385044,
+  "longitude": 78.486671,
+  "specialty": "Cardiologist",
+  "experience": 12,
+  "hospitalName": "Apollo Hospital",
+  "registrationId": "TSMC-2025-00123"
+}

@@ -1,0 +1,114 @@
+// This is your Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  patient
+  doctor
+  pharmacy
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  phone      String    @unique
+  name       String
+  role       Role
+  isVerified Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+
+  address    String
+  latitude   Float
+  longitude  Float
+
+  patient    Patient?
+  doctor     Doctor?
+  pharmacy   Pharmacy?
+}
+
+model Patient {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  age       Int?
+  gender    String?
+
+  user      User      @relation(fields: [userId], references: [id])
+  records   HealthRecord[]
+  consultations Consultation[]
+  calls     Call[]
+}
+
+
+model HealthRecord {
+  id        Int      @id @default(autoincrement())
+  patientId Int
+  type      String   // "pdf", "image", "text"
+  fileUrl   String?  // Uploaded file path or cloud URL
+  details   String?  // Optional notes
+  createdAt DateTime @default(now())
+
+  patient   Patient  @relation(fields: [patientId], references: [id])
+}
+
+
+model Doctor {
+  id             Int     @id @default(autoincrement())
+  userId         Int     @unique
+  registrationId String
+  specialty      String?
+  experience     Int?       // years
+  hospitalName   String?
+
+  user        User           @relation(fields: [userId], references: [id])
+  consultations Consultation[]
+  calls       Call[]
+}
+
+model Consultation {
+  id        Int      @id @default(autoincrement())
+  doctorId  Int
+  patientId Int
+  notes     String?
+  createdAt DateTime @default(now())
+
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  patient   Patient  @relation(fields: [patientId], references: [id])
+}
+
+model Pharmacy {
+  id         Int     @id @default(autoincrement())
+  userId     Int     @unique
+  licenseId  String
+
+  user       User    @relation(fields: [userId], references: [id])
+  medicines  MedicineStock[]
+}
+
+
+model MedicineStock {
+  id          Int      @id @default(autoincrement())
+  pharmacyId  Int
+  name        String
+  quantity    Int
+  updatedAt   DateTime @default(now())
+
+  pharmacy    Pharmacy @relation(fields: [pharmacyId], references: [id])
+}
+
+model Call {
+  id        Int      @id @default(autoincrement())
+  doctorId  Int
+  patientId Int
+  startedAt DateTime @default(now())
+  endedAt   DateTime?
+
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  patient   Patient  @relation(fields: [patientId], references: [id])
+}
