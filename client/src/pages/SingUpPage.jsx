@@ -15,7 +15,8 @@ const SingUpPage = () => {
       const data = res.data;
       console.log(data);
 
-      if (res.status === 201) { // registration success
+      if (data.status == true) { // registration success
+        console.log(data);
        localStorage.setItem("token", `Bearer ${data.token}`);
         alert("Registered successfully!");
 

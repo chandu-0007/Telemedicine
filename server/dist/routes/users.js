@@ -11,18 +11,18 @@ const router = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 // Register
-router.post('/register', async (req, res) => {
-    const { phone, name, role, address, latitude, longitude } = req.body;
+router.post("/register", async (req, res) => {
+    const { phone, name, role, address, latitude, longitude, age, gender, registrationId, specialty, experience, hospitalName, licenseId, } = req.body;
     if (!phone || !name || !role || !address || latitude === undefined || longitude === undefined) {
-        return res.status(400).json({ status: false, error: 'All fields are required.' });
+        return res.status(400).json({ status: false, error: "All fields are required." });
     }
-    if (!['patient', 'doctor', 'pharmacy'].includes(role)) {
-        return res.status(400).json({ status: false, error: 'Invalid role.' });
+    if (!["patient", "doctor", "pharmacy"].includes(role)) {
+        return res.status(400).json({ status: false, error: "Invalid role." });
     }
     try {
         const existingUser = await prisma.user.findUnique({ where: { phone } });
         if (existingUser) {
-            return res.status(400).json({ status: false, error: 'User already exists.' });
+            return res.status(400).json({ status: false, error: "User already exists." });
         }
         const user = await prisma.user.create({
             data: {
@@ -35,33 +35,49 @@ router.post('/register', async (req, res) => {
             },
         });
         // Role-specific creation
-        if (role === 'patient') {
-            await prisma.patient.create({ data: { userId: user.id } });
-        }
-        else if (role === 'doctor') {
-            await prisma.doctor.create({
+        if (role === "patient") {
+            await prisma.patient.create({
                 data: {
                     userId: user.id,
-                    registrationId: 'TEMP123', // Replace with real data
+                    age: age ? parseInt(age) : null,
+                    gender: gender || null,
                 },
             });
         }
-        else if (role === 'pharmacy') {
+        else if (role === "doctor") {
+            if (!registrationId) {
+                return res.status(400).json({ status: false, error: "registrationId is required for doctors." });
+            }
+            await prisma.doctor.create({
+                data: {
+                    userId: user.id,
+                    registrationId,
+                    specialty: specialty || null,
+                    experience: experience ? parseInt(experience) : null,
+                    hospitalName: hospitalName || null,
+                    isAvailable: true,
+                },
+            });
+        }
+        else if (role === "pharmacy") {
+            if (!licenseId) {
+                return res.status(400).json({ status: false, error: "licenseId is required for pharmacies." });
+            }
             await prisma.pharmacy.create({
                 data: {
                     userId: user.id,
-                    licenseId: 'TEMP456', // Replace with real data
+                    licenseId,
                 },
             });
         }
         const token = jsonwebtoken_1.default.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
             expiresIn: '7d',
         });
-        res.status(201).json({ status: true, token, user });
+        res.json({ status: true, token, user });
     }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Registration failed' });
+    catch (err) {
+        console.error(err);
+        res.status(500).json({ status: false, error: "Server error" });
     }
 });
 // Login
@@ -83,17 +99,24 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ status: false, error: 'Login failed' });
     }
 });
+// users.ts
 router.get('/me', Auth_1.authMiddleware, async (req, res) => {
-    const userId = req.userId;
     try {
-        const user = await prisma.user.findFirst({
-            where: { id: userId }
+        if (!req.userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const user = await prisma.user.findUnique({
+            where: { id: req.userId },
+            include: {
+                patient: true,
+                doctor: true,
+                pharmacy: true,
+            },
         });
-        res.status(200).json({ status: true, user });
+        res.json({ user });
     }
-    catch (error) {
-        console.error(error);
-        res.status(500).json({ status: false, error: 'Failed to fetch user' });
+    catch (err) {
+        res.status(500).json({ error: "Could not fetch user" });
     }
 });
 exports.default = router;

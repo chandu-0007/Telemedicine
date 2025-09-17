@@ -22,7 +22,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; role: string };
-    req.user = decoded; // Attach user info to request
+    req.userId = decoded.userId; // Attach user info to request
     next();
   } catch (error) {
     return res.status(403).json({ error: "Invalid or expired token" });

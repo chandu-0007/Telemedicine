@@ -14,7 +14,7 @@ function authMiddleware(req, res, next) {
     const token = authHeader.split(" ")[1];
     try {
         const decoded = jsonwebtoken_1.default.verify(token, JWT_SECRET);
-        req.user = decoded; // Attach user info to request
+        req.userId = decoded.userId; // Attach user info to request
         next();
     }
     catch (error) {

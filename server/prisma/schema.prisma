@@ -43,6 +43,7 @@ model Patient {
   records   HealthRecord[]
   consultations Consultation[]
   calls     Call[]
+  Appointments  Appointment[]
 }
 
 
@@ -57,30 +58,48 @@ model HealthRecord {
   patient   Patient  @relation(fields: [patientId], references: [id])
 }
 
-
 model Doctor {
   id             Int     @id @default(autoincrement())
   userId         Int     @unique
   registrationId String
   specialty      String?
-  experience     Int?       // years
+  experience     Int?
   hospitalName   String?
+  isAvailable    Boolean @default(true) // doctor can toggle
 
-  user        User           @relation(fields: [userId], references: [id])
-  consultations Consultation[]
-  calls       Call[]
+  user           User           @relation(fields: [userId], references: [id])
+  consultations  Consultation[]
+  calls          Call[]
+  Appointments  Appointment[]
+}
+
+model Appointment {
+  id         Int       @id @default(autoincrement())
+  doctorId   Int
+  patientId  Int
+  date       DateTime
+  status     String    @default("pending") // "pending", "confirmed", "canceled", "completed"
+  notes      String?
+
+  doctor     Doctor    @relation(fields: [doctorId], references: [id])
+  patient    Patient   @relation(fields: [patientId], references: [id])
+  consultation Consultation?
 }
 
 model Consultation {
-  id        Int      @id @default(autoincrement())
-  doctorId  Int
-  patientId Int
-  notes     String?
-  createdAt DateTime @default(now())
+  id            Int       @id @default(autoincrement())
+  doctorId      Int
+  patientId     Int
+  appointmentId Int?      @unique
+  notes         String?
+  prescription  String?
+  createdAt     DateTime  @default(now())
 
-  doctor    Doctor   @relation(fields: [doctorId], references: [id])
-  patient   Patient  @relation(fields: [patientId], references: [id])
+  doctor        Doctor     @relation(fields: [doctorId], references: [id])
+  patient       Patient    @relation(fields: [patientId], references: [id])
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
 }
+
 
 model Pharmacy {
   id         Int     @id @default(autoincrement())

@@ -6,22 +6,9 @@ import { useEffect } from 'react';
 import homeimg from "../assets/homeimg.png";
 
 function LandingPage() {
-  const [userlogin, setUserLogin] = useState(false);
-  const nav = useNavigate();
-  const token = localStorage.getItem('token');
-  React.useEffect(() => {
-    if (token) {
-      setUserLogin(true);
-    } else {
-      setUserLogin(false);
-    }
-  }, [token])
-
+  const nav = useNavigate()
   return (
     <>
-
-      {
-        !userlogin &&
         <div className=' bg-white w-screen h-screen flex justify-center items-center'>
           <div className='w-screen h-15 border-none flex justify-between px-12 py-6 text-black  absolute top-0 overflow-hidden 
           '>
@@ -80,7 +67,6 @@ function LandingPage() {
           </div>
 
         </div>
-      }
     </>
 
   );

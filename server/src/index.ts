@@ -7,7 +7,8 @@ import userRoutes from './routes/users';
 import appointmentRoutes from './routes/appointments';
 import { registerSocketHandlers } from './socketHandlers';
 import { PrismaClient } from '@prisma/client';
-
+import doctorRoutes from "./routes/doctors";
+import consultations from "./routes/consultations";
 dotenv.config();
 const prisma = new PrismaClient();
 const app = express();
@@ -24,7 +25,9 @@ app.get('/', (req: Request, res: Response) => {
 
 // Routes
 app.use('/users', userRoutes);
+app.use('/consultations',consultations);
 app.use('/appointments', appointmentRoutes);
+app.use("/doctors", doctorRoutes);
 
 // 404 Not Found
 app.use((req: Request, res: Response) => {
@@ -42,11 +45,15 @@ const server = http.createServer(app);
 
 // Attach Socket.IO
 const io = new Server(server, {
-  cors: { origin: "*" },
+  cors: {
+    origin: "http://localhost:5173", // your React dev server
+    methods: ["GET", "POST"],
+  },
 });
 
+
 // Register signaling logic
-registerSocketHandlers(io , prisma);
+registerSocketHandlers(io);
 
 // Start server
 server.listen(port, () => {
