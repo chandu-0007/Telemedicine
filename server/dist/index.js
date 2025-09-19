@@ -14,13 +14,17 @@ const socketHandlers_1 = require("./socketHandlers");
 const client_1 = require("@prisma/client");
 const doctors_1 = __importDefault(require("./routes/doctors"));
 const consultations_1 = __importDefault(require("./routes/consultations"));
+const healthRecords_1 = __importDefault(require("./routes/healthRecords"));
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const app = (0, express_1.default)();
 const port = process.env.PORT || 4000;
+const Auth_1 = require("./middleware/Auth");
+const path_1 = __importDefault(require("path"));
 // Middleware
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../uploads")));
 // Health check
 app.get('/', (req, res) => {
     res.send('API is running ✅');
@@ -30,6 +34,7 @@ app.use('/users', users_1.default);
 app.use('/consultations', consultations_1.default);
 app.use('/appointments', appointments_1.default);
 app.use("/doctors", doctors_1.default);
+app.use("/health-records", Auth_1.authMiddleware, healthRecords_1.default);
 // 404 Not Found
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });

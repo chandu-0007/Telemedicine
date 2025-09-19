@@ -9,15 +9,18 @@ import { registerSocketHandlers } from './socketHandlers';
 import { PrismaClient } from '@prisma/client';
 import doctorRoutes from "./routes/doctors";
 import consultations from "./routes/consultations";
+import healtheRecords from "./routes/healthRecords";
 dotenv.config();
 const prisma = new PrismaClient();
 const app = express();
 const port = process.env.PORT || 4000;
+import {authMiddleware} from './middleware/Auth';
+import path from 'path';
 
 // Middleware
 app.use(cors());
 app.use(express.json());
-
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 // Health check
 app.get('/', (req: Request, res: Response) => {
   res.send('API is running ✅');
@@ -28,6 +31,7 @@ app.use('/users', userRoutes);
 app.use('/consultations',consultations);
 app.use('/appointments', appointmentRoutes);
 app.use("/doctors", doctorRoutes);
+app.use("/health-records",authMiddleware, healtheRecords);
 
 // 404 Not Found
 app.use((req: Request, res: Response) => {

@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/socketHandlers.ts","./src/middleware/Auth.ts","./src/routes/appointments.ts","./src/routes/consultations.ts","./src/routes/doctors.ts","./src/routes/users.ts","./src/types/express.d.ts"],"version":"5.9.2"}
+{"root":["./src/index.ts","./src/socketHandlers.ts","./src/middleware/Auth.ts","./src/routes/appointments.ts","./src/routes/consultations.ts","./src/routes/doctors.ts","./src/routes/healthRecords.ts","./src/routes/users.ts","./src/types/express.d.ts"],"version":"5.9.2"}

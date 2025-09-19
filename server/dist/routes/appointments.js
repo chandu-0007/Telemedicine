@@ -6,11 +6,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const Auth_1 = require("../middleware/Auth");
+const twilio_1 = __importDefault(require("twilio"));
 const router = express_1.default.Router();
 const prisma = new client_1.PrismaClient();
+const client = (0, twilio_1.default)(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 router.post("/", Auth_1.authMiddleware, async (req, res) => {
     try {
         const { doctorId, date, notes } = req.body;
+        const user = await prisma.user.findUnique({
+            where: { id: req.userId }
+        });
+        if (!user)
+            return res.status(404).json({ error: "User not found" });
         // doctorId is actually user.id, so find the Doctor row
         const doctor = await prisma.doctor.findUnique({
             where: { userId: doctorId },
@@ -28,6 +35,13 @@ router.post("/", Auth_1.authMiddleware, async (req, res) => {
                 notes,
             },
         });
+        const patientPhone = `whatsapp:+91${user.phone}`;
+        const doctorName = user.name;
+        // await client.messages.create({
+        //   from: process.env.TWILIO_WHATSAPP, // Twilio sandbox
+        //   to: patientPhone,
+        //   body: `✅ Appointment Confirmed!\nDoctor: Dr. ${doctorName}\n📅 Date: ${appointment.date.toDateString()}\n📝 Notes: ${appointment.notes || "N/A"}`,
+        // });
         res.json({ appointment });
     }
     catch (err) {

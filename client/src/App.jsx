@@ -1,70 +1,80 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import SingUpPage from "./pages/SingUpPage";
 import LoginPage from "./pages/LoginPage";
-import DashBoard from "./pages/DashBoard";
-import LandingPage from "./pages/landingPage";
+import LandingPage from "./pages/landingPage"
 import CallRoom from "./components/CallRoom";
-import BookedAppointments from "./pages/BookAppoinments"; // ✅ fix import name
+import PatientDashboard from "./components/patinetDashboard";
+import DoctorsList from "./components/DoctorsList";
+import BookedAppointments from "./pages/BookAppoinments"
+import UploadHealthRecord from "./components/UploadHealthRecord";
+import Dashboard from "./pages/DashBoard";
+import axios from "axios";
+import { useState } from "react";
 
-// Protected Route Component
+// Protected Route
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token"); // check if token exists
-  if (!token) {
-    return <Navigate to="/users/login" replace />;
-  }
+  const token = localStorage.getItem("token");
+  if (!token) return <Navigate to="/users/login" replace />;
   return children;
 };
 
 const App = () => {
   const token = localStorage.getItem("token");
+  const [userDetails, setUserDetails] = useState(null);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await axios.get("http://localhost:4000/users/me", {
+          headers: {
+            Authorization: localStorage.getItem("token"), // token includes "Bearer "
+          },
+        });
+        setUserDetails(res.data.user);
+        console.log(res.data)
+      } catch (err) {
+        console.error("Error fetching user:", err);
+      }
+    };
 
+    fetchUser();
+  }, []);
   return (
     <Router>
       <Routes>
-        {/* Redirect root (/) based on auth */}
+        {/* Root redirect */}
         <Route
           path="/"
-          element={
-            token ? <Navigate to="/users/dashboard" replace /> : <LandingPage />
-          }
+          element={token ? <Navigate to="/dashboard/doctors" replace /> : <LandingPage />}
         />
 
-        {/* Public Routes */}
+        {/* Public */}
         <Route path="/users/register" element={<SingUpPage />} />
         <Route path="/users/login" element={<LoginPage />} />
 
-        {/* Protected Routes */}
+        {/* Protected Dashboard with nested routes */}
         <Route
-          path="/users/dashboard"
+          path="/dashboard"
           element={
             <ProtectedRoute>
-              <DashBoard />
+              <Dashboard user={userDetails} />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="doctors" element={<DoctorsList token={token} />} />
+          <Route path="appointments" element={<BookedAppointments />} />
+          <Route path="health-records" element={<UploadHealthRecord />} />
+        </Route>
 
-        {/* Call Room for video/audio calls */}
-        <Route
-          path="/call/:doctorId"
-          element={
-            <ProtectedRoute>
-              <CallRoom />
-            </ProtectedRoute>
-          }
-        />
+        {/* Call room */}
+        <Route path="/call/:remoteId" element={
+          <ProtectedRoute>
+            <CallRoom  user={userDetails}/>
+          </ProtectedRoute>
+        } />
 
-        {/* Booked Appointments */}
-        <Route
-          path="/users/appointments"
-          element={
-            <ProtectedRoute>
-              <BookedAppointments />
-            </ProtectedRoute>
-          }
-        />
 
-        {/* 404 fallback */}
+        {/* 404 */}
         <Route
           path="*"
           element={

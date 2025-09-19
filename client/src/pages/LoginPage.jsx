@@ -18,7 +18,7 @@ const LoginPage = () => {
         // Store token with Bearer prefix
         localStorage.setItem("token", `Bearer ${result.token}`);
         alert("Login successful!");
-        nav("/users/dashboard"); // redirect after login
+        nav("/dashboard/doctors"); // redirect after login
       } else {
         alert(result.error || "Login failed");
       }

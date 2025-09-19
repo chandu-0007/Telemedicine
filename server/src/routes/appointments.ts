@@ -1,13 +1,18 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware } from '../middleware/Auth';
+import twilio from 'twilio';
 const router = express.Router();
 const prisma = new PrismaClient();
+const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
 
 router.post("/", authMiddleware, async (req, res) => {
   try {
     const { doctorId, date, notes } = req.body;
-
+    const user = await prisma.user.findUnique({
+     where: { id :req.userId }
+   })
+    if (!user) return res.status(404).json({ error: "User not found" });
     // doctorId is actually user.id, so find the Doctor row
     const doctor = await prisma.doctor.findUnique({
       where: { userId: doctorId },
@@ -25,6 +30,17 @@ router.post("/", authMiddleware, async (req, res) => {
         notes,
       },
     });
+   
+    const patientPhone = `whatsapp:+91${user.phone}`;
+    const doctorName = user.name;
+
+    // await client.messages.create({
+    //   from: process.env.TWILIO_WHATSAPP, // Twilio sandbox
+    //   to: patientPhone,
+    //   body: `✅ Appointment Confirmed!\nDoctor: Dr. ${doctorName}\n📅 Date: ${appointment.date.toDateString()}\n📝 Notes: ${appointment.notes || "N/A"}`,
+    // });
+
+    
 
     res.json({ appointment });
   } catch (err) {

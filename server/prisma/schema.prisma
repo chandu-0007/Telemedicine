@@ -1,6 +1,3 @@
-// This is your Prisma schema file
-// Learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,12 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  patient
-  doctor
-  pharmacy
-}
-
 model User {
   id         Int       @id @default(autoincrement())
   phone      String    @unique
@@ -23,111 +14,104 @@ model User {
   role       Role
   isVerified Boolean   @default(false)
   createdAt  DateTime  @default(now())
-
   address    String
   latitude   Float
   longitude  Float
-
-  patient    Patient?
   doctor     Doctor?
+  patient    Patient?
   pharmacy   Pharmacy?
 }
 
 model Patient {
-  id        Int       @id @default(autoincrement())
-  userId    Int       @unique
-  age       Int?
-  gender    String?
-
-  user      User      @relation(fields: [userId], references: [id])
-  records   HealthRecord[]
-  consultations Consultation[]
-  calls     Call[]
+  id            Int            @id @default(autoincrement())
+  userId        Int            @unique
+  age           Int?
+  gender        String?
   Appointments  Appointment[]
+  calls         Call[]
+  consultations Consultation[]
+  records       HealthRecord[]
+  user          User           @relation(fields: [userId], references: [id])
 }
-
 
 model HealthRecord {
   id        Int      @id @default(autoincrement())
   patientId Int
-  type      String   // "pdf", "image", "text"
-  fileUrl   String?  // Uploaded file path or cloud URL
-  details   String?  // Optional notes
+  type      String
+  fileUrl   String?
+  details   String?
   createdAt DateTime @default(now())
-
   patient   Patient  @relation(fields: [patientId], references: [id])
 }
 
 model Doctor {
-  id             Int     @id @default(autoincrement())
-  userId         Int     @unique
+  id             Int            @id @default(autoincrement())
+  userId         Int            @unique
   registrationId String
   specialty      String?
   experience     Int?
   hospitalName   String?
-  isAvailable    Boolean @default(true) // doctor can toggle
-
-  user           User           @relation(fields: [userId], references: [id])
-  consultations  Consultation[]
+  isAvailable    Boolean        @default(true)
+  Appointments   Appointment[]
   calls          Call[]
-  Appointments  Appointment[]
+  consultations  Consultation[]
+  user           User           @relation(fields: [userId], references: [id])
 }
 
 model Appointment {
-  id         Int       @id @default(autoincrement())
-  doctorId   Int
-  patientId  Int
-  date       DateTime
-  status     String    @default("pending") // "pending", "confirmed", "canceled", "completed"
-  notes      String?
-
-  doctor     Doctor    @relation(fields: [doctorId], references: [id])
-  patient    Patient   @relation(fields: [patientId], references: [id])
+  id           Int           @id @default(autoincrement())
+  doctorId     Int
+  patientId    Int
+  date         DateTime
+  status       String        @default("pending")
+  notes        String?
+  doctor       Doctor        @relation(fields: [doctorId], references: [id])
+  patient      Patient       @relation(fields: [patientId], references: [id])
   consultation Consultation?
 }
 
 model Consultation {
-  id            Int       @id @default(autoincrement())
+  id            Int          @id @default(autoincrement())
   doctorId      Int
   patientId     Int
-  appointmentId Int?      @unique
   notes         String?
+  createdAt     DateTime     @default(now())
+  appointmentId Int?         @unique
   prescription  String?
-  createdAt     DateTime  @default(now())
-
-  doctor        Doctor     @relation(fields: [doctorId], references: [id])
-  patient       Patient    @relation(fields: [patientId], references: [id])
   appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  doctor        Doctor       @relation(fields: [doctorId], references: [id])
+  patient       Patient      @relation(fields: [patientId], references: [id])
 }
-
 
 model Pharmacy {
-  id         Int     @id @default(autoincrement())
-  userId     Int     @unique
-  licenseId  String
-
-  user       User    @relation(fields: [userId], references: [id])
-  medicines  MedicineStock[]
+  id        Int             @id @default(autoincrement())
+  userId    Int             @unique
+  licenseId String
+  medicines MedicineStock[]
+  user      User            @relation(fields: [userId], references: [id])
 }
 
-
 model MedicineStock {
-  id          Int      @id @default(autoincrement())
-  pharmacyId  Int
-  name        String
-  quantity    Int
-  updatedAt   DateTime @default(now())
-
-  pharmacy    Pharmacy @relation(fields: [pharmacyId], references: [id])
+  id         Int      @id @default(autoincrement())
+  pharmacyId Int
+  name       String
+  quantity   Int
+  updatedAt  DateTime @default(now())
+  pharmacy   Pharmacy @relation(fields: [pharmacyId], references: [id])
 }
 
 model Call {
-  id        Int      @id @default(autoincrement())
+  id        Int       @id @default(autoincrement())
   doctorId  Int
   patientId Int
-  startedAt DateTime @default(now())
+  startedAt DateTime  @default(now())
   endedAt   DateTime?
+  doctor    Doctor    @relation(fields: [doctorId], references: [id])
+  patient   Patient   @relation(fields: [patientId], references: [id])
+}
 
-  doctor    Doctor   @relation(fields: [doctorId], references: [id])
-  patient   Patient  @relation(fields: [patientId], references: [id])
+enum Role {
+  patient
+  doctor
+  pharmacy
 }

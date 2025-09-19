@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import DoctorDashboard from "../components/doctorDashboard";
 import PatientDashboard from "../components/patinetDashboard";
-const Dashboard = () => {
+import Skeleton from "../components/Skeleton";
+const Dashboard = ({user}) => {
   const [userDetails, setUserDetails] = useState(null);
   useEffect(() => {
     const fetchUser = async () => {
@@ -23,7 +24,9 @@ const Dashboard = () => {
   }, []);
 
   if (!userDetails) {
-    return <div className="p-4">Loading dashboard...</div>;
+    return <>
+        <Skeleton/>
+    </>
   }
 
   return (
@@ -32,13 +35,13 @@ const Dashboard = () => {
       {/* Conditional rendering by role */}
       {userDetails.role === "patient" && (
         <div>
-          <PatientDashboard userId={userDetails.id} userName={userDetails.name}/>
+          <PatientDashboard user={user} userName={userDetails.name}/>
         </div>
       )}
 
       {userDetails.role === "doctor" && (
         <div>
-            <DoctorDashboard userId={userDetails.id}/>
+            <DoctorDashboard user={userDetails}/>
           </div>
       )}
 

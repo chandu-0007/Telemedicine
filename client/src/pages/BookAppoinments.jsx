@@ -1,5 +1,6 @@
 // src/pages/BookedAppointments.jsx
 import React, { useEffect, useState } from "react";
+import Skeleton from "../components/Skeleton";
 
 export default function BookedAppointments() {
   const [appointments, setAppointments] = useState([]);
@@ -24,9 +25,9 @@ export default function BookedAppointments() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen text-lg">
-        Loading appointments...
-      </div>
+       <>
+         <Skeleton/>
+       </>
     );
   }
 

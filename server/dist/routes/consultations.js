@@ -1,55 +1,37 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// src/routes/consultations.ts
 const express_1 = require("express");
 const client_1 = require("@prisma/client");
-const Auth_1 = require("../middleware/Auth");
-const router = (0, express_1.Router)();
+const Auth_1 = require("../middleware/Auth"); // your existing middleware
 const prisma = new client_1.PrismaClient();
-// 📌 Create consultation (doctor only)
+const router = (0, express_1.Router)();
 router.post("/", Auth_1.authMiddleware, async (req, res) => {
     try {
-        const { appointmentId, notes, prescription } = req.body;
-        const appointment = await prisma.appointment.findUnique({
-            where: { id: appointmentId },
-        });
-        if (!appointment || appointment.doctorId !== req.userId) {
-            return res.status(404).json({ message: "Appointment not found or not assigned to you" });
-        }
+        const doctorUserId = req.userId;
+        const { patientUserId, notes } = req.body;
+        if (!doctorUserId)
+            return res.status(401).json({ error: "Unauthorized" });
+        if (!patientUserId)
+            return res.status(400).json({ error: "patientUserId required" });
+        const doctor = await prisma.doctor.findUnique({ where: { userId: Number(doctorUserId) } });
+        if (!doctor)
+            return res.status(404).json({ error: "Doctor not found" });
+        const patient = await prisma.patient.findUnique({ where: { userId: Number(patientUserId) } });
+        if (!patient)
+            return res.status(404).json({ error: "Patient not found" });
         const consultation = await prisma.consultation.create({
             data: {
-                doctorId: Number(req.userId),
-                patientId: appointment.patientId,
-                appointmentId,
-                notes,
-                prescription,
+                doctorId: doctor.id,
+                patientId: patient.id,
+                notes: notes || "",
             },
         });
-        // Mark appointment as completed
-        await prisma.appointment.update({
-            where: { id: appointmentId },
-            data: { status: "completed" },
-        });
-        res.json({ consultation });
+        res.json({ success: true, consultation });
     }
     catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Error creating consultation" });
+        console.error("Consultation save error:", err);
+        res.status(500).json({ error: "Failed to save consultation" });
     }
-});
-// 📌 Get consultations for patient
-router.get("/patient", Auth_1.authMiddleware, async (req, res) => {
-    const consultations = await prisma.consultation.findMany({
-        where: { patientId: req.userId },
-        include: { doctor: { include: { user: true } }, appointment: true },
-    });
-    res.json({ consultations });
-});
-// 📌 Get consultations for doctor
-router.get("/doctor", Auth_1.authMiddleware, async (req, res) => {
-    const consultations = await prisma.consultation.findMany({
-        where: { doctorId: req.userId },
-        include: { patient: { include: { user: true } }, appointment: true },
-    });
-    res.json({ consultations });
 });
 exports.default = router;
