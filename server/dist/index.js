@@ -15,6 +15,7 @@ const client_1 = require("@prisma/client");
 const doctors_1 = __importDefault(require("./routes/doctors"));
 const consultations_1 = __importDefault(require("./routes/consultations"));
 const healthRecords_1 = __importDefault(require("./routes/healthRecords"));
+const chatbotRoutes_1 = __importDefault(require("./routes/chatbotRoutes"));
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const app = (0, express_1.default)();
@@ -30,6 +31,7 @@ app.get('/', (req, res) => {
     res.send('API is running ✅');
 });
 // Routes
+app.use("/chatbot", chatbotRoutes_1.default);
 app.use('/users', users_1.default);
 app.use('/consultations', consultations_1.default);
 app.use('/appointments', appointments_1.default);

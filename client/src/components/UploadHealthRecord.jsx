@@ -27,7 +27,6 @@ export default function UploadHealthRecord() {
       const data = await res.json();
       if (data.success) {
         alert("Record uploaded successfully!");
-        nav("/dashboard/doctors")
       } else {
         alert("Failed: " + data.error);
       }

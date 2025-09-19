@@ -5,6 +5,7 @@ export default function HealthRecordsPage() {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [deletingId, setDeletingId] = useState();
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -39,6 +40,29 @@ export default function HealthRecordsPage() {
     fetchRecords();
   }, []);
 
+  // 🗑️ Handle delete
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this record?")) return;
+
+    try {
+      setDeletingId(id);
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:4000/health-records/${id}`, {
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      // Update UI after successful deletion
+      setRecords((prev) => prev.filter((record) => record.id !== id));
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete record");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -65,22 +89,30 @@ export default function HealthRecordsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {records.map((record) => {
             const fileUrl = `http://localhost:4000${record.fileUrl}`;
-            const isImage = record.type === "image" || record.fileUrl.match(/\.(jpg|jpeg|png|gif)$/i);
-            const isPdf = record.type === "pdf" || record.fileUrl.endsWith(".pdf");
+            const isImage =
+              record.type === "image" ||
+              record.fileUrl?.match(/\.(jpg|jpeg|png|gif)$/i);
+            const isPdf =
+              record.type === "pdf" || record.fileUrl?.endsWith(".pdf");
 
             return (
               <div
                 key={record.id}
                 className="bg-white p-4 rounded-lg shadow hover:shadow-lg transition"
               >
-                <h3 className="font-semibold text-lg capitalize">{record.type}</h3>
+                <h3 className="font-semibold text-lg capitalize">
+                  {record.type}
+                </h3>
 
                 {record.details && (
-                  <p className="text-gray-600 text-sm mt-1">{record.details}</p>
+                  <p className="text-gray-600 text-sm mt-1">
+                    {record.details}
+                  </p>
                 )}
 
                 <p className="text-xs text-gray-400 mt-2">
-                  Uploaded on: {new Date(record.createdAt).toLocaleDateString()}
+                  Uploaded on:{" "}
+                  {new Date(record.createdAt).toLocaleDateString()}
                 </p>
 
                 {/* Preview Section */}
@@ -104,17 +136,27 @@ export default function HealthRecordsPage() {
                   )}
                 </div>
 
-                {/* View Button */}
-                {record.fileUrl && (
-                  <a
-                    href={fileUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-block mt-3 px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                {/* Actions */}
+                <div className="flex gap-3 mt-3">
+                  {record.fileUrl && (
+                    <a
+                      href={fileUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex-1 text-center px-4 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                    >
+                      View
+                    </a>
+                  )}
+
+                  <button
+                    onClick={() => handleDelete(record.id)}
+                    disabled={deletingId === record.id}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700 disabled:opacity-50"
                   >
-                    View File
-                  </a>
-                )}
+                    {deletingId === record.id ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
               </div>
             );
           })}

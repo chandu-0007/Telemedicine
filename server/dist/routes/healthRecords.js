@@ -73,4 +73,32 @@ router.get("/", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch records" });
     }
 });
+router.delete("/:id", async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { id } = req.params;
+        if (!userId) {
+            return res.status(401).json({ error: "Unauthorized" });
+        }
+        const patient = await prisma.patient.findUnique({ where: { userId } });
+        if (!patient) {
+            return res.status(404).json({ error: "Patient not found" });
+        }
+        // Check if record belongs to patient
+        const record = await prisma.healthRecord.findUnique({
+            where: { id: Number(id) },
+        });
+        if (!record || record.patientId !== patient.id) {
+            return res.status(404).json({ error: "Record not found" });
+        }
+        await prisma.healthRecord.delete({
+            where: { id: record.id },
+        });
+        res.json({ success: true, message: "Record deleted successfully" });
+    }
+    catch (err) {
+        console.error("Delete error:", err);
+        res.status(500).json({ error: "Failed to delete record" });
+    }
+});
 exports.default = router;

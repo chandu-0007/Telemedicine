@@ -10,6 +10,7 @@ import { PrismaClient } from '@prisma/client';
 import doctorRoutes from "./routes/doctors";
 import consultations from "./routes/consultations";
 import healtheRecords from "./routes/healthRecords";
+import chatbotRoutes from  "./routes/chatbotRoutes"
 dotenv.config();
 const prisma = new PrismaClient();
 const app = express();
@@ -27,6 +28,8 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 // Routes
+
+app.use("/chatbot", chatbotRoutes);
 app.use('/users', userRoutes);
 app.use('/consultations',consultations);
 app.use('/appointments', appointmentRoutes);

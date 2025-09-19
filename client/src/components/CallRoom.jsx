@@ -14,11 +14,10 @@ function decodeToken(token) {
   }
 }
 
-export default function CallRoom({user}) {
+export default function CallRoom({ user }) {
   const { remoteId } = useParams(); // remote userId (doctor for patient; patient for doctor)
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  // const user = token ? decodeToken(token) : null;
   const role = user?.role; // "patient" or "doctor"
   const myUserId = user?.id;
 
@@ -91,10 +90,12 @@ export default function CallRoom({user}) {
     if (role === "patient") {
       startPatientFlow();
     } else if (role === "doctor") {
-      // Doctor just waits for offer (they will be navigated to this route after accepting)
       setStatus("waiting-for-offer");
-      // create RTCPeerConnection now so it can accept ICE candidates early
-      createPeerConnection();
+      const pc = createPeerConnection();
+      // doctor also sends their own stream
+      getLocalStream().then((stream) => {
+        stream.getTracks().forEach((t) => pc.addTrack(t, stream));
+      });
     } else {
       alert("Unknown role");
       navigate("/users/login");
@@ -118,12 +119,18 @@ export default function CallRoom({user}) {
     pcRef.current = pc;
 
     pc.ontrack = (event) => {
-      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = event.streams[0];
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = event.streams[0];
+      }
     };
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
-        socket.emit("signal", { to: Number(remoteId), type: "ice-candidate", payload: event.candidate });
+        socket.emit("signal", {
+          to: Number(remoteId),
+          type: "ice-candidate",
+          payload: event.candidate,
+        });
       }
     };
 
@@ -134,7 +141,9 @@ export default function CallRoom({user}) {
     if (localStreamRef.current) return localStreamRef.current;
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     localStreamRef.current = stream;
-    if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = stream;
+    }
     return stream;
   };
 
@@ -147,8 +156,7 @@ export default function CallRoom({user}) {
     const onAccepted = ({ doctorId }) => {
       if (Number(doctorId) !== Number(remoteId)) return;
       socket.off("call:accepted", onAccepted);
-      // doctor accepted -> proceed as caller
-      startAsCaller();
+      startAsCaller(); // proceed as caller
     };
 
     const onCanceled = ({ from }) => {
@@ -166,13 +174,11 @@ export default function CallRoom({user}) {
     setStatus("starting-call");
     const pc = createPeerConnection();
     try {
-      // get local media & add tracks
       const stream = await getLocalStream();
       stream.getTracks().forEach((t) => pc.addTrack(t, stream));
 
       const offer = await pc.createOffer();
       await pc.setLocalDescription(offer);
-      // send offer to doctor
       socket.emit("signal", { to: Number(remoteId), type: "offer", payload: pc.localDescription });
     } catch (err) {
       console.error("startAsCaller error:", err);
@@ -182,11 +188,9 @@ export default function CallRoom({user}) {
   };
 
   const endCallClicked = async () => {
-    // notify remote
     socket.emit("call:end", { to: Number(remoteId) });
     cleanupRtc();
     if (role === "doctor") {
-      // open notes modal
       setShowNotesModal(true);
     } else {
       navigate("/dashboard/doctors");
@@ -194,7 +198,6 @@ export default function CallRoom({user}) {
   };
 
   const cleanupRtc = () => {
-    // stop tracks
     try {
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach((t) => t.stop());
@@ -239,8 +242,8 @@ export default function CallRoom({user}) {
       )}
 
       <div className="flex gap-4 items-start">
-        <video ref={localVideoRef} autoPlay muted className="w-40 h-40 bg-black" />
-        <video ref={remoteVideoRef} autoPlay className="w-72 h-72 bg-black" />
+        <video ref={localVideoRef} autoPlay muted className="w-40 h-40 bg-black rounded" />
+        <video ref={remoteVideoRef} autoPlay className="w-72 h-72 bg-black rounded" />
       </div>
 
       <div className="mt-4">

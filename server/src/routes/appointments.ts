@@ -2,6 +2,7 @@ import express from 'express';
 import { PrismaClient } from '@prisma/client';
 import { authMiddleware } from '../middleware/Auth';
 import twilio from 'twilio';
+
 const router = express.Router();
 const prisma = new PrismaClient();
 const client = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH);
