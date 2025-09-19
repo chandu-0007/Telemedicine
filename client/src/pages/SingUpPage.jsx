@@ -8,7 +8,7 @@ const SingUpPage = () => {
 
   const submitMethod = async (formData) => {
     try {
-      const res = await axios.post("http://localhost:4000/users/register", formData, {
+      const res = await axios.post("https://telemedicine-2nan.onrender.com/users/register", formData, {
         headers: { "Content-Type": "application/json" },
       });
 

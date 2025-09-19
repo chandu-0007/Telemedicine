@@ -18,7 +18,7 @@ export default function UploadHealthRecord() {
     formData.append("details", details);
 
     try {
-      const res = await fetch("http://localhost:4000/health-records", {
+      const res = await fetch("https://telemedicine-2nan.onrender.com/health-records", {
         method: "POST",
         headers: { Authorization: localStorage.getItem('token') },
         body: formData,

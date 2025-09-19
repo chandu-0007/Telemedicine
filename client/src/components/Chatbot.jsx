@@ -29,7 +29,7 @@ export default function ChatBot() {
     setLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:4000/chatbot/chat", {
+      const res = await axios.post("https://telemedicine-2nan.onrender.com/chatbot/chat", {
         message: input,
         lang,
       });

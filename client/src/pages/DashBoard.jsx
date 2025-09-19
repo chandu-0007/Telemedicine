@@ -8,7 +8,7 @@ const Dashboard = ({user}) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await axios.get("http://localhost:4000/users/me", {
+        const res = await axios.get("https://telemedicine-2nan.onrender.com/users/me", {
           headers: {
             Authorization: localStorage.getItem("token"), // token includes "Bearer "
           },

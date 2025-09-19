@@ -17,7 +17,7 @@ export default function HealthRecordsPage() {
           return;
         }
 
-        const res = await axios.get("http://localhost:4000/health-records", {
+        const res = await axios.get("https://telemedicine-2nan.onrender.com/health-records", {
           headers: {
             Authorization: token,
           },
@@ -47,7 +47,7 @@ export default function HealthRecordsPage() {
     try {
       setDeletingId(id);
       const token = localStorage.getItem("token");
-      await axios.delete(`http://localhost:4000/health-records/${id}`, {
+      await axios.delete(`https://telemedicine-2nan.onrender.com/health-records/${id}`, {
         headers: {
           Authorization: token,
         },
@@ -88,7 +88,7 @@ export default function HealthRecordsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {records.map((record) => {
-            const fileUrl = `http://localhost:4000${record.fileUrl}`;
+            const fileUrl = `https://telemedicine-2nan.onrender.com/${record.fileUrl}`;
             const isImage =
               record.type === "image" ||
               record.fileUrl?.match(/\.(jpg|jpeg|png|gif)$/i);

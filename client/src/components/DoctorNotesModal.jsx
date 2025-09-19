@@ -9,7 +9,7 @@ export default function DoctorNotesModal({ patientUserId, onClose, onSaved }) {
     setLoading(true);
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:4000/consultations", {
+      const res = await fetch("https://telemedicine-2nan.onrender.com/consultations", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

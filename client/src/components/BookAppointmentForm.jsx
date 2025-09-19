@@ -17,7 +17,7 @@ export default function BookAppointmentForm({ doctorId, token, onClose, onSucces
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:4000/appointments", {
+      const res = await fetch("https://telemedicine-2nan.onrender.com/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -8,7 +8,7 @@ const LoginPage = () => {
 
   const submitMethod = async (data) => {
     try {
-      const res = await axios.post("http://localhost:4000/users/login", data, {
+      const res = await axios.post("https://telemedicine-2nan.onrender.com/users/login", data, {
         headers: { "Content-Type": "application/json" },
       });
 

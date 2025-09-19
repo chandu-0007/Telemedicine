@@ -16,7 +16,7 @@ export default function DoctorsList({ token }) {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await fetch("http://localhost:4000/doctors/available");
+        const res = await fetch("https://telemedicine-2nan.onrender.com/doctors/available");
         const data = await res.json();
         setDoctors(data.doctors || []);
       } catch (err) {

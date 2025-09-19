@@ -9,7 +9,7 @@ export default function BookedAppointments() {
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const res = await fetch("http://localhost:4000/appointments/my", {
+        const res = await fetch("https://telemedicine-2nan.onrender.com/appointments/my", {
           headers: { Authorization: localStorage.getItem("token") },
         });
         const data = await res.json();
