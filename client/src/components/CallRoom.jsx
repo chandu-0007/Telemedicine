@@ -33,6 +33,8 @@ export default function CallRoom({ user }) {
   const STUN_CONFIG = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
 
   useEffect(() => {
+    console.log(token);
+    console.log(user);
     if (!token || !user) {
       alert("Unauthorized — please login");
       navigate("/users/login");
